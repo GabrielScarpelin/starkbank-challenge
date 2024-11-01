@@ -14,7 +14,7 @@ export class InvoiceCallbackController {
     @Headers('Digital-Signature') signature: string,
   ) {
     console.log('Digital Signature: ', signature);
-    await this.invoiceCallbackService.verifySignature(signature);
+    await this.invoiceCallbackService.verifySignature(body, signature);
     console.log('Invoice callback received: ', body);
     return this.invoiceCallbackService.handleInvoiceCallback(body.log.invoice);
   }

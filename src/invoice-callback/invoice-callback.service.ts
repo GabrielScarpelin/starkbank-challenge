@@ -68,16 +68,22 @@ export class InvoiceCallbackService {
     }
   }
 
-  async verifySignature(signature: string) {
-    const response = await fetch(process.env.STARK_API + 'v2/public-key');
-    const publicKey = (await response.json()).content;
+  async verifySignature(message: any, signature: string) {
+    try {
+      const response = await fetch(process.env.STARK_API + 'v2/public-key');
+      const publicKey = (await response.json()).publicKeys[0].content;
 
-    const verifier = createVerify('SHA256');
-    verifier.update(signature);
-    const test = verifier.verify(publicKey, signature, 'base64');
+      const verifier = createVerify('SHA256');
+      verifier.update(message);
+      const test = verifier.verify(publicKey, signature, 'base64');
 
-    if (!test) {
-      throw new Error('Invalid signature');
+      if (!test) {
+        throw new Error('Invalid signature');
+      }
+    } catch (error: any) {
+      console.error('Error to verify signature');
+      console.error('Message: ', error);
+      throw new Error('Error to verify signature');
     }
   }
 }
