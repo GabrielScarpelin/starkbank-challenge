@@ -37,7 +37,7 @@ model Invoice {
 }
 
 model Transfer {
-  id        Int      @id
+  id        String   @id
   invoiceId String
   amount    Float
   createdAt DateTime

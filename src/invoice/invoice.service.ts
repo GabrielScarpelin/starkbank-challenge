@@ -2,9 +2,13 @@ import { Injectable } from '@nestjs/common';
 import invoices from './examples/people';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { InvoiceCallbackService } from 'src/invoice-callback/invoice-callback.service';
+import { StarkbankConfig } from 'src/starkbank-integration/starkbank.config';
+import { Invoice } from 'starkbank';
 
 @Injectable()
 export class InvoiceService {
+  private readonly starkbankConfig: StarkbankConfig = new StarkbankConfig();
+
   constructor(
     private readonly prismaService: PrismaService,
     private readonly invoiceCallback: InvoiceCallbackService,
@@ -23,27 +27,18 @@ export class InvoiceService {
     }
   }
   async emitInvoice(invoices: any[]) {
-    const response = await fetch(process.env.STARK_API + 'v2/invoice', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        invoices,
-      }),
+    const invoicesList = invoices.map((invoice) => {
+      return new Invoice({
+        amount: invoice.amount,
+        taxId: invoice.taxId,
+        name: invoice.name,
+      });
     });
-    const data = await response.json();
-
-    if (response.status !== 201 && response.status !== 200) {
-      console.error('Error to send invoices.');
-      console.error('Invoices list: ', invoices);
-      console.error('Response: ', data);
-      throw new Error('Error to send invoices.');
-    }
-    const invoicesResponse = data.invoices;
+    const invoicesCreated =
+      await this.starkbankConfig.starkbank.invoice.create(invoicesList);
 
     await this.prismaService.invoice.createMany({
-      data: invoicesResponse.map((invoice) => ({
+      data: invoicesCreated.map((invoice) => ({
         id: invoice.id,
         amount: invoice.amount,
         status: 'WAITING_PAYMENT',
@@ -59,9 +54,9 @@ export class InvoiceService {
         fineAmount: invoice.fineAmount,
         interestAmount: invoice.interestAmount,
         nominalAmount: invoice.nominalAmount,
-        linkUrl: invoice.linkUrl,
         name: invoice.name,
-        pdfUrl: invoice.pdfUrl,
+        linkUrl: '',
+        pdfUrl: '',
         taxId: invoice.taxId,
       })),
     });
@@ -81,27 +76,18 @@ export class InvoiceService {
     }
 
     for (const invoice of invoices) {
-      const response = await fetch(
-        process.env.STARK_API + 'v2/invoice/' + invoice.id,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
+      const checkInvoice = await this.starkbankConfig.starkbank.invoice.get(
+        invoice.id,
       );
 
-      const data = await response.json();
-
-      if (response.status !== 200) {
+      if (!checkInvoice) {
         console.error('Error to get invoice.');
         console.error('Invoice: ', invoice);
-        console.error('Response: ', data);
-        throw new Error('Error to get invoice.');
+        continue;
       }
 
-      if (data.invoice.status === 'paid') {
-        await this.invoiceCallback.handleInvoiceCallback(data.invoice);
+      if (checkInvoice.status === 'paid') {
+        await this.invoiceCallback.handleInvoiceCallback(checkInvoice);
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));

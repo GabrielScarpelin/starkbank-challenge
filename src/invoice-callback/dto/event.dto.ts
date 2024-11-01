@@ -6,6 +6,7 @@ import {
   IsNumber,
   ValidateNested,
   IsUrl,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -14,7 +15,8 @@ class DescriptionDto {
   key: string;
 
   @IsString()
-  value: string;
+  @IsOptional()
+  value?: string;
 }
 
 class DiscountDto {
