@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import starkbank from 'starkbank';
+import * as starkbank from 'starkbank';
 
 @Injectable()
 export class StarkbankConfig {
