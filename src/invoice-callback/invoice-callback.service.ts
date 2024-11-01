@@ -11,6 +11,11 @@ export class InvoiceCallbackService {
     private readonly prismaService: PrismaService,
   ) {}
   async handleInvoiceCallback(invoiceDto: InvoiceDto) {
+    if (invoiceDto.status !== 'paid') {
+      return {
+        message: 'Invoice callback received but not paid',
+      };
+    }
     const invoice = await this.prismaService.invoice.update({
       where: {
         id: invoiceDto.id,
