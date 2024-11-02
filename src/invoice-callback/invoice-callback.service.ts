@@ -82,14 +82,12 @@ export class InvoiceCallbackService {
       const pemKey = (await response.json()).publicKeys[0].content;
 
       const base64Key = pemKey
-        .replace('-----BEGIN PUBLIC KEY-----\n', '')
-        .replace('-----END PUBLIC KEY-----\n', '')
-        .replace(/\n/g, ''); // Remove quebras de linha
-
+        .replace('-----BEGIN PUBLIC KEY-----', '')
+        .replace('-----END PUBLIC KEY-----', '')
+        .replace(/\n/g, '');
       const publicKeyBuffer = Buffer.from(base64Key, 'base64');
 
-      // Ignorando os primeiros 24 bytes da chave pública para extrair o ponto da curva
-      const publicKeyHex = publicKeyBuffer.subarray(24).toString('hex');
+      const publicKeyHex = '04' + publicKeyBuffer.subarray(-64).toString('hex');
 
       const messageFormat =
         typeof message === 'object' ? JSON.stringify(message) : message;
