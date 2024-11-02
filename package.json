@@ -29,9 +29,11 @@
     "@prisma/client": "^5.21.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "elliptic": "^6.6.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
-    "starkbank": "^2.29.1"
+    "starkbank": "^2.29.1",
+    "starkbank-ecdsa": "^1.1.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { createVerify } from 'crypto';
 import { TransferService } from 'src/transfer/transfer.service';
 import { InvoiceDto } from './dto/event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as elliptic from 'elliptic';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class InvoiceCallbackService {
+  private ec = new elliptic.ec('secp256k1');
+
   constructor(
     private readonly transferService: TransferService,
     private readonly prismaService: PrismaService,
@@ -78,11 +81,11 @@ export class InvoiceCallbackService {
       const response = await fetch(process.env.STARK_API + 'v2/public-key');
       const publicKey = (await response.json()).publicKeys[0].content;
 
-      const verifier = createVerify('SHA256');
-      verifier.update(message);
-      const test = verifier.verify(publicKey, signature, 'base64');
+      const bodyHash = crypto.createHash('sha256').update(message).digest();
+      const key = this.ec.keyFromPublic(publicKey, 'hex');
+      const signatureBuffer = Buffer.from(signature, 'base64');
 
-      if (!test) {
+      if (!key.verify(bodyHash, signatureBuffer)) {
         throw new Error('Invalid signature');
       }
     } catch (error: any) {
