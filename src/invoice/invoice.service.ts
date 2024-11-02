@@ -14,6 +14,7 @@ export class InvoiceService {
     private readonly invoiceCallback: InvoiceCallbackService,
   ) {}
   async creatingInvoices() {
+    console.log('Invoices to be created: ', invoices);
     if (invoices.length === 0) {
       return;
     }
