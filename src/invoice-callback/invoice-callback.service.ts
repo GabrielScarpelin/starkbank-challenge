@@ -2,17 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { TransferService } from 'src/transfer/transfer.service';
 import { InvoiceDto } from './dto/event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import * as elliptic from 'elliptic';
-import * as crypto from 'crypto';
+import { StarkbankConfig } from 'src/starkbank-integration/starkbank.config';
 
 @Injectable()
 export class InvoiceCallbackService {
-  private ec = new elliptic.ec('secp256k1');
+  private starkbankConfig: StarkbankConfig;
 
   constructor(
     private readonly transferService: TransferService,
     private readonly prismaService: PrismaService,
-  ) {}
+  ) {
+    this.starkbankConfig = new StarkbankConfig();
+  }
   async handleInvoiceCallback(invoiceDto: InvoiceDto) {
     if (invoiceDto.status !== 'paid') {
       return {
@@ -78,37 +79,17 @@ export class InvoiceCallbackService {
 
   async verifySignature(message: any, signature: string) {
     try {
-      const response = await fetch(process.env.STARK_API + 'v2/public-key');
-      const pemKey = (await response.json()).publicKeys[0].content;
+      const event = await this.starkbankConfig.starkbank.event.parse({
+        content: JSON.stringify(message),
+        signature,
+      });
 
-      const base64Key = pemKey
-        .replace('-----BEGIN PUBLIC KEY-----', '')
-        .replace('-----END PUBLIC KEY-----', '')
-        .replace(/\n/g, '');
-      const publicKeyBuffer = Buffer.from(base64Key, 'base64');
-
-      const publicKeyHex = '04' + publicKeyBuffer.subarray(-64).toString('hex');
-
-      const messageFormat =
-        typeof message === 'object' ? JSON.stringify(message) : message;
-
-      const bodyHash = crypto
-        .createHash('sha256')
-        .update(messageFormat)
-        .digest();
-      const key = this.ec.keyFromPublic(publicKeyHex, 'hex');
-
-      const signatureBuffer = Buffer.from(signature, 'base64');
-      const r = signatureBuffer.subarray(0, 32).toString('hex');
-      const s = signatureBuffer.subarray(32, 64).toString('hex');
-
-      if (!key.verify(bodyHash, { r, s })) {
-        throw new Error('Invalid signature');
+      if (!event || event.subscription !== 'invoice') {
+        throw new Error('Invalid event');
       }
     } catch (error: any) {
-      console.error('Error to verify signature');
-      console.error('Message: ', error);
-      throw new Error('Error to verify signature');
+      console.error('Error to verify signature: ', error);
+      throw new Error('Invalid signature');
     }
   }
 }
