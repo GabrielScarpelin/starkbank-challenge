@@ -20,7 +20,7 @@ export class InvoiceService {
     }
     const batchsNums = Math.ceil(invoices.length / 100);
 
-    if (batchsNums > 1) {
+    if (batchsNums > 0) {
       for (let i = 0; i < batchsNums; i++) {
         const batch = invoices.slice(i * 100, (i + 1) * 100);
         await this.emitInvoice(batch);
