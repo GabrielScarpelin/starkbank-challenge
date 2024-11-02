@@ -10,7 +10,7 @@ import {
 import { StarkbankCallbackService } from './starkbank-callback.service';
 import { EventDto } from './dto/event.dto';
 
-@Controller('invoice-callback')
+@Controller('starkbank-callback')
 export class StarkbankCallbackController {
   constructor(
     private readonly starkbankCallbackService: StarkbankCallbackService,
