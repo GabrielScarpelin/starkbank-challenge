@@ -37,18 +37,29 @@ model Invoice {
 }
 
 model Transfer {
-  id        String   @id
-  invoiceId String
+  id        String         @id
+  invoiceId String?
   amount    Float
+  status    TransferStatus
   createdAt DateTime
   updatedAt DateTime
-  Invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  invoice   Invoice?       @relation(fields: [invoiceId], references: [id])
 }
 
 enum InvoiceStatus {
-  WAITING_PAYMENT
+  CREATED
   PAID
   EXPIRED
   CANCELED
-  SUCCESSFUL_TRANSFER
+  VOIDED
+  OVERDUE
+  TRANSFER_SOLICITED
+}
+
+enum TransferStatus {
+  CREATED
+  PROCESSING
+  CANCELED
+  FAILED
+  SUCCESS
 }

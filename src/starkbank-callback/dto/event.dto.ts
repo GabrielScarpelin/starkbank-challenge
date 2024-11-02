@@ -9,6 +9,7 @@ import {
   IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Transfer } from 'starkbank';
 
 class DescriptionDto {
   @IsString()
@@ -118,7 +119,11 @@ class LogDto {
 
   @ValidateNested()
   @Type(() => InvoiceDto)
-  invoice: InvoiceDto;
+  invoice?: InvoiceDto;
+
+  @ValidateNested()
+  @Type(() => Transfer)
+  transfer?: Transfer;
 }
 
 export class EventDto {

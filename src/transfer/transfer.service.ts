@@ -32,12 +32,12 @@ export class TransferService {
           accountType,
         }),
       ]);
-
     const transfer = await this.prismaService.transfer.create({
       data: {
         id: transferCreated[0].id,
         invoiceId,
         amount,
+        status: 'CREATED',
         createdAt: new Date(),
         updatedAt: new Date(),
       },

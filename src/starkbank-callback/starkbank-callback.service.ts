@@ -3,9 +3,10 @@ import { TransferService } from 'src/transfer/transfer.service';
 import { InvoiceDto } from './dto/event.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { StarkbankConfig } from 'src/starkbank-integration/starkbank.config';
+import { Transfer } from 'starkbank';
 
 @Injectable()
-export class InvoiceCallbackService {
+export class StarkbankCallbackService {
   private starkbankConfig: StarkbankConfig;
 
   constructor(
@@ -16,16 +17,48 @@ export class InvoiceCallbackService {
   }
   async handleInvoiceCallback(invoiceDto: InvoiceDto) {
     if (invoiceDto.status !== 'paid') {
-      console.warn('Invoice callback received but not paid');
-      console.log('InvoiceDto: ', invoiceDto);
-      return {
-        message: 'Invoice callback received but not paid',
+      const mappedStatus = {
+        overdue: 'OVERDUE',
+        canceled: 'CANCELED',
+        voided: 'VOIDED',
+        expired: 'EXPIRED',
+        created: 'CREATED',
       };
+
+      this.prismaService.invoice.upsert({
+        where: {
+          id: invoiceDto.id,
+        },
+        update: {
+          status: mappedStatus[invoiceDto.status],
+        },
+        create: {
+          id: invoiceDto.id,
+          linkUrl: invoiceDto.link,
+          pdfUrl: invoiceDto.pdf,
+          taxId: invoiceDto.taxId,
+          amount: invoiceDto.amount,
+          status: mappedStatus[invoiceDto.status],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          brcode: invoiceDto.brcode,
+          discountAmount: invoiceDto.discountAmount,
+          fee: invoiceDto.fee,
+          due: invoiceDto.due,
+          expiration: invoiceDto.expiration,
+          fine: invoiceDto.fine,
+          interest: invoiceDto.interest,
+          fineAmount: invoiceDto.fineAmount,
+          interestAmount: invoiceDto.interestAmount,
+          nominalAmount: invoiceDto.nominalAmount,
+          name: invoiceDto.name,
+        },
+      });
     }
     const invoice = await this.prismaService.invoice.update({
       where: {
         id: invoiceDto.id,
-        status: 'WAITING_PAYMENT',
+        status: 'CREATED',
       },
       data: {
         status: 'PAID',
@@ -65,7 +98,7 @@ export class InvoiceCallbackService {
           id: invoiceDto.id,
         },
         data: {
-          status: 'SUCCESSFUL_TRANSFER',
+          status: 'TRANSFER_SOLICITED',
         },
       });
       console.log('Transfer done');
@@ -78,6 +111,38 @@ export class InvoiceCallbackService {
         message: 'Invoice callback received but transfer failed',
       };
     }
+  }
+
+  async handleTransferCallback(transfer: Transfer) {
+    const mappedStatus = {
+      processing: 'PROCESSING',
+      canceled: 'CANCELED',
+      failed: 'FAILED',
+      success: 'SUCCESS',
+      created: 'CREATED',
+    };
+    const transferUpdated = await this.prismaService.transfer.upsert({
+      where: {
+        id: transfer.id,
+      },
+      update: {
+        status: mappedStatus[transfer.status],
+      },
+      create: {
+        id: transfer.id,
+        invoiceId: null,
+        amount: transfer.amount,
+        status: mappedStatus[transfer.status],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    if (!transferUpdated) {
+      throw new Error('Error to update transfer');
+    }
+
+    return transferUpdated;
   }
 
   async verifySignature(message: any, signature: string) {
