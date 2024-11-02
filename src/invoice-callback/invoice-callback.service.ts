@@ -80,22 +80,21 @@ export class InvoiceCallbackService {
     try {
       const response = await fetch(process.env.STARK_API + 'v2/public-key');
       const publicKey = (await response.json()).publicKeys[0].content;
-      let messageFormat = null;
 
-      if (typeof message === 'object') {
-        messageFormat = JSON.stringify(message);
-      } else {
-        messageFormat = message;
-      }
+      const messageFormat =
+        typeof message === 'object' ? JSON.stringify(message) : message;
 
       const bodyHash = crypto
         .createHash('sha256')
-        .update(JSON.stringify(messageFormat))
+        .update(messageFormat)
         .digest();
       const key = this.ec.keyFromPublic(publicKey, 'hex');
-      const signatureBuffer = Buffer.from(signature, 'base64');
 
-      if (!key.verify(bodyHash, signatureBuffer)) {
+      const signatureBuffer = Buffer.from(signature, 'base64');
+      const r = signatureBuffer.subarray(0, 32).toString('hex');
+      const s = signatureBuffer.subarray(32, 64).toString('hex');
+
+      if (!key.verify(bodyHash, { r, s })) {
         throw new Error('Invalid signature');
       }
     } catch (error: any) {
