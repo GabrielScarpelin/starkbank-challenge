@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { InvoiceCallbackModule } from 'src/starkbank-callback/starkbank-callback.module';
+import { StarkbankCallbackModule } from 'src/starkbank-callback/starkbank-callback.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
-  imports: [InvoiceCallbackModule],
+  imports: [StarkbankCallbackModule],
   providers: [PrismaService],
 })
 export class InvoiceModule {}
