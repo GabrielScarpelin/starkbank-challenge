@@ -80,7 +80,7 @@ export class InvoiceCallbackService {
   async verifySignature(message: any, signature: string) {
     try {
       const event = await this.starkbankConfig.starkbank.event.parse({
-        content: JSON.stringify(message),
+        content: message,
         signature,
       });
 
@@ -92,7 +92,6 @@ export class InvoiceCallbackService {
       console.log('Error, but let it pass');
       console.log('Message to string: ', message.toString());
       console.log('Signature: ', signature);
-      console.log('Message: ', JSON.stringify(message));
     }
   }
 }

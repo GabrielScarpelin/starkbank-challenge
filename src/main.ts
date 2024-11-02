@@ -11,6 +11,7 @@ async function bootstrap() {
   };
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
+    rawBody: true,
   });
   await app.listen(3000);
 }
