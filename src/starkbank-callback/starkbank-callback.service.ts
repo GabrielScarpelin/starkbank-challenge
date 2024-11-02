@@ -152,7 +152,10 @@ export class StarkbankCallbackService {
         signature,
       });
 
-      if (!event || event.subscription !== 'invoice') {
+      if (
+        !event ||
+        (event.subscription !== 'invoice' && event.subscription !== 'transfer')
+      ) {
         throw new Error('Invalid event');
       }
     } catch (error: any) {
