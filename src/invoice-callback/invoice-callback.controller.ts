@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Headers,
+  HttpCode,
   Post,
   RawBodyRequest,
   Req,
@@ -16,6 +17,7 @@ export class InvoiceCallbackController {
   ) {}
 
   @Post()
+  @HttpCode(200)
   async handleInvoiceCallback(
     @Body()
     body: {
