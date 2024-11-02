@@ -79,7 +79,17 @@ export class InvoiceCallbackService {
   async verifySignature(message: any, signature: string) {
     try {
       const response = await fetch(process.env.STARK_API + 'v2/public-key');
-      const publicKey = (await response.json()).publicKeys[0].content;
+      const pemKey = (await response.json()).publicKeys[0].content;
+
+      const base64Key = pemKey
+        .replace('-----BEGIN PUBLIC KEY-----\n', '')
+        .replace('-----END PUBLIC KEY-----\n', '')
+        .replace(/\n/g, ''); // Remove quebras de linha
+
+      const publicKeyBuffer = Buffer.from(base64Key, 'base64');
+
+      // Ignorando os primeiros 24 bytes da chave pública para extrair o ponto da curva
+      const publicKeyHex = publicKeyBuffer.subarray(24).toString('hex');
 
       const messageFormat =
         typeof message === 'object' ? JSON.stringify(message) : message;
@@ -88,7 +98,7 @@ export class InvoiceCallbackService {
         .createHash('sha256')
         .update(messageFormat)
         .digest();
-      const key = this.ec.keyFromPublic(publicKey, 'hex');
+      const key = this.ec.keyFromPublic(publicKeyHex, 'hex');
 
       const signatureBuffer = Buffer.from(signature, 'base64');
       const r = signatureBuffer.subarray(0, 32).toString('hex');
