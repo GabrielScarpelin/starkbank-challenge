@@ -28,6 +28,7 @@ export class InvoiceService {
     }
   }
   async emitInvoice(invoices: any[]) {
+    console.log('Emitting invoices: ', invoices);
     const invoicesList = invoices.map((invoice) => {
       return new Invoice({
         amount: invoice.amount,
@@ -37,7 +38,7 @@ export class InvoiceService {
     });
     const invoicesCreated =
       await this.starkbankConfig.starkbank.invoice.create(invoicesList);
-
+    console.log('Invoices created: ', invoicesCreated);
     await this.prismaService.invoice.createMany({
       data: invoicesCreated.map((invoice) => ({
         id: invoice.id,
