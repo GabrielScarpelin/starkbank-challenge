@@ -5,7 +5,7 @@ import { InvoiceService } from 'src/invoice/invoice.service';
 @Injectable()
 export class TasksService {
   constructor(private readonly invoiceService: InvoiceService) {}
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_3_HOURS)
   async handleEmitInvoice() {
     console.log('Creating invoices');
     await this.invoiceService.creatingInvoices();
