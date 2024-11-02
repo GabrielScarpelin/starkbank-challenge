@@ -29,9 +29,7 @@ export class InvoiceService {
   async emitInvoice(invoices: any[]) {
     const invoicesList = invoices.map((invoice) => {
       return new Invoice({
-        amount:
-          Math.round((invoice.amount + Math.random() * 4000 + 1000) * 100) /
-          100,
+        amount: invoice.amount + (Math.round(Math.random() * 4000) + 1000),
         taxId: invoice.taxId,
         name: invoice.name,
       });
