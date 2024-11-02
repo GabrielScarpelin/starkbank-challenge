@@ -17,7 +17,10 @@ export class InvoiceCallbackController {
 
   @Post()
   async handleInvoiceCallback(
-    @Body() body: EventDto,
+    @Body()
+    body: {
+      event: EventDto;
+    },
     @Headers('Digital-Signature') signature: string,
     @Req() req: RawBodyRequest<Request>,
   ) {
@@ -27,6 +30,8 @@ export class InvoiceCallbackController {
       signature,
     );
     console.log('Invoice callback received: ', body);
-    return this.invoiceCallbackService.handleInvoiceCallback(body.log.invoice);
+    return this.invoiceCallbackService.handleInvoiceCallback(
+      body.event.log.invoice,
+    );
   }
 }
