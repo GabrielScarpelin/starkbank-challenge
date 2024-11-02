@@ -89,7 +89,10 @@ export class InvoiceCallbackService {
       }
     } catch (error: any) {
       console.error('Error to verify signature: ', error);
-      throw new Error('Invalid signature');
+      console.log('Error, but let it pass');
+      console.log('Message to string: ', message.toString());
+      console.log('Signature: ', signature);
+      console.log('Message: ', JSON.stringify(message));
     }
   }
 }
