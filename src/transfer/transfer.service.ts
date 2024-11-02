@@ -19,6 +19,7 @@ export class TransferService {
     accountType: string,
     invoiceId: string,
   ) {
+    console.log('Creating transfer');
     const transferCreated =
       await this.starkbankConfig.starkbank.transfer.create([
         new Transfer({
@@ -41,6 +42,7 @@ export class TransferService {
         updatedAt: new Date(),
       },
     });
+    console.log('Transfer created: ', transfer);
     return transfer;
   }
 }

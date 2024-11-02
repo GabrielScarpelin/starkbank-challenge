@@ -16,6 +16,8 @@ export class InvoiceCallbackService {
   }
   async handleInvoiceCallback(invoiceDto: InvoiceDto) {
     if (invoiceDto.status !== 'paid') {
+      console.warn('Invoice callback received but not paid');
+      console.log('InvoiceDto: ', invoiceDto);
       return {
         message: 'Invoice callback received but not paid',
       };
@@ -66,11 +68,12 @@ export class InvoiceCallbackService {
           status: 'SUCCESSFUL_TRANSFER',
         },
       });
-
+      console.log('Transfer done');
       return {
         message: 'Invoice callback received and processed',
       };
     } catch (error: any) {
+      console.error('Error to create transfer: ', error);
       return {
         message: 'Invoice callback received but transfer failed',
       };
