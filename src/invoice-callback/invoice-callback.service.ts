@@ -80,8 +80,18 @@ export class InvoiceCallbackService {
     try {
       const response = await fetch(process.env.STARK_API + 'v2/public-key');
       const publicKey = (await response.json()).publicKeys[0].content;
+      let messageFormat = null;
 
-      const bodyHash = crypto.createHash('sha256').update(message).digest();
+      if (typeof message === 'object') {
+        messageFormat = JSON.stringify(message);
+      } else {
+        messageFormat = message;
+      }
+
+      const bodyHash = crypto
+        .createHash('sha256')
+        .update(JSON.stringify(messageFormat))
+        .digest();
       const key = this.ec.keyFromPublic(publicKey, 'hex');
       const signatureBuffer = Buffer.from(signature, 'base64');
 
