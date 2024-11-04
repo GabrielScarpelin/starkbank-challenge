@@ -12,6 +12,7 @@ import { TransferModule } from './transfer/transfer.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { ConfigModule } from '@nestjs/config';
 import { StarkbankCallbackService } from './starkbank-callback/starkbank-callback.service';
+import { StarkbankConfig } from './starkbank-integration/starkbank.config';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StarkbankCallbackService } from './starkbank-callback/starkbank-callbac
     TransferService,
     PrismaService,
     StarkbankCallbackService,
+    StarkbankConfig,
   ],
 })
 export class AppModule {}

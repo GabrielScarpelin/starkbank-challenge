@@ -1,4 +1,4 @@
-import { Invoice } from 'starkbank';
+import { Invoice, Transfer } from 'starkbank';
 import { EventDto } from '../dto/event.dto';
 
 export const transferEventMock = JSON.parse(`{
@@ -81,3 +81,20 @@ export const invoiceMock = JSON.parse(`
     "transactionIds": ["6671637889941504"],
     "fee": 200
 }`) as Invoice;
+
+export const mockTransfer = JSON.parse(`
+{
+    "id": "5907195937947648",
+    "status": "success",
+    "amount": 10000000,
+    "name": "Jon Snow",
+    "bankCode": "001",
+    "branchCode": "5897",
+    "accountNumber": "10000-0",
+    "taxId": "580.822.679-17",
+    "tags": ["jon", "snow", "knows-nothing"],
+    "created": "2020-03-11T00:14:21.548876+00:00",
+    "updated": "2020-03-11T00:14:22.104702+00:00",
+    "transactionIds": ["6671637889941504"],
+    "fee": 200
+}`) as Transfer;

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StarkbankCallbackController } from './starkbank-callback.controller';
 import { StarkbankCallbackService } from './starkbank-callback.service';
-import { invoiceEventMock, transferEventMock } from './mocks/event.mock';
+import { invoiceEventMock, transferEventMock } from './tests/mocks';
 
 describe('StarkbankCallbackController', () => {
   let starkbankCallbackController: StarkbankCallbackController;

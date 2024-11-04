@@ -7,11 +7,10 @@ import { Invoice } from 'starkbank';
 
 @Injectable()
 export class InvoiceService {
-  private readonly starkbankConfig: StarkbankConfig = new StarkbankConfig();
-
   constructor(
     private readonly prismaService: PrismaService,
     private readonly starkbankCallbackService: StarkbankCallbackService,
+    private readonly starkbankConfig: StarkbankConfig,
   ) {}
   async creatingInvoices() {
     if (invoices.length === 0) {
@@ -66,7 +65,14 @@ export class InvoiceService {
   async checkPendingInvoices() {
     const invoices = await this.prismaService.invoice.findMany({
       where: {
-        status: 'CREATED',
+        OR: [
+          {
+            status: 'CREATED',
+          },
+          {
+            status: 'OVERDUE',
+          },
+        ],
       },
     });
 

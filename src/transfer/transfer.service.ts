@@ -5,10 +5,11 @@ import { Transfer } from 'starkbank';
 
 @Injectable()
 export class TransferService {
-  private readonly starkbankConfig: StarkbankConfig;
-  constructor(private readonly prismaService: PrismaService) {
-    this.starkbankConfig = new StarkbankConfig();
-  }
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly starkbankConfig: StarkbankConfig,
+  ) {}
+
   async createTransfer(
     name: string,
     amount: number,

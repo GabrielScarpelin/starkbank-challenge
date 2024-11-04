@@ -7,14 +7,11 @@ import { Transfer } from 'starkbank';
 
 @Injectable()
 export class StarkbankCallbackService {
-  private starkbankConfig: StarkbankConfig;
-
   constructor(
     private readonly transferService: TransferService,
     private readonly prismaService: PrismaService,
-  ) {
-    this.starkbankConfig = new StarkbankConfig();
-  }
+    private readonly starkbankConfig: StarkbankConfig,
+  ) {}
   async handleInvoiceCallback(invoiceDto: InvoiceDto) {
     if (invoiceDto.status !== 'paid') {
       const mappedStatus = {
@@ -58,6 +55,7 @@ export class StarkbankCallbackService {
         message: 'Invoice callback received and processed but not paid',
       };
     }
+
     const invoice = await this.prismaService.invoice.update({
       where: {
         id: invoiceDto.id,
@@ -148,10 +146,6 @@ export class StarkbankCallbackService {
       },
     });
 
-    if (!transferUpdated) {
-      throw new Error('Error to update transfer');
-    }
-
     return transferUpdated;
   }
 
@@ -168,11 +162,12 @@ export class StarkbankCallbackService {
       ) {
         throw new Error('Invalid event');
       }
+      return true;
     } catch (error: any) {
       console.error('Error to verify signature: ', error);
-      console.log('Error, but let it pass');
       console.log('Message to string: ', message.toString());
       console.log('Signature: ', signature);
+      return false;
     }
   }
 }
