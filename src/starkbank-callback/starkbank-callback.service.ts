@@ -61,7 +61,14 @@ export class StarkbankCallbackService {
     const invoice = await this.prismaService.invoice.update({
       where: {
         id: invoiceDto.id,
-        status: 'CREATED',
+        OR: [
+          {
+            status: 'CREATED',
+          },
+          {
+            status: 'OVERDUE',
+          },
+        ],
       },
       data: {
         status: 'PAID',
