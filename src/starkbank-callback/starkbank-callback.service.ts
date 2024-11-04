@@ -54,6 +54,9 @@ export class StarkbankCallbackService {
           name: invoiceDto.name,
         },
       });
+      return {
+        message: 'Invoice callback received and processed but not paid',
+      };
     }
     const invoice = await this.prismaService.invoice.update({
       where: {
