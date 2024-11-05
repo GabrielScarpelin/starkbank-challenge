@@ -38,13 +38,27 @@ PROJECT_ID=""
 ENVIRONMENT=""
 ```
 
-4. Execute as migrações do banco de dados
+4. Crie um arquivo em `src/invoice/examples/people.ts` e adicione os dados que serão gerados os invoices no seguinte formato:
+
+```typescript
+const invoices = [
+  {
+    name: 'John Doe',
+    taxId: '01234567890',
+    bankCode: '341',
+  },
+];
+
+export default invoices;
+```
+
+5. Execute as migrações do banco de dados
 
 ```bash
 npx prisma migrate dev
 ```
 
-5. Inicie o servidor
+6. Inicie o servidor
 
 ```bash
 npm run start:dev
