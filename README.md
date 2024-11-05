@@ -1,73 +1,148 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# Starkbank Challenge - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Descrição
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+O objetivo deste desafio é emitir _invoices_ automaticamente para clientes aleatórios a cada três horas. O pagamento das _invoices_ é feito automaticamente pelo sistema, e o status do pagamento deve ser atualizado no banco de dados e automaticamente enviar o dinheiro recebido para a conta bancária da Starkbank.
 
-## Description
+## Requisitos
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js
+- NestJS-Cli
+- Prisma-Cli
+- PostgreSQL Database
 
-## Installation
+## Instalação
+
+1. Clone o repositório
 
 ```bash
-$ npm install
+git clone
 ```
 
-## Running the app
+2. Instale as dependências
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Test
+3. Crie um arquivo `.env` na raiz do projeto e adicione as seguintes variáveis de ambiente:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+DATABASE_URL=""
+STARK_API=''
+KEY_HTTPS_PATH=""
+CERT_HTTPS_PATH=""
+PRIVATE_KEY=""
+PUBLIC_KEY=""
+PROJECT_ID=""
+ENVIRONMENT=""
 ```
 
-## Support
+4. Execute as migrações do banco de dados
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npx prisma migrate dev
+```
 
-## Stay in touch
+5. Inicie o servidor
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+npm run start:dev
+```
 
-## License
+**Pontos importantes:** A chave e o certificado HTTPS são necessários pois os webhooks da Starkbank exigem uma conexão segura. O Stark API é a url base do ambiente da starkbank. O Starkbank exige que o ambiente seja especificado, podendo ser `sandbox` ou `production`. O Starkbank também exige que o `PROJECT_ID` seja especificado. A chave privada e pública são necessárias para a autenticação do Starkbank, você deve configurar a chave pública no painel de webhooks da Starkbank.
 
-Nest is [MIT licensed](LICENSE).
+## Rotas
+
+- `POST /starkbank-callback` - Rota para receber os webhooks da Starkbank
+- `GET /` - Rota para verificar se a aplicação está online e retorna um Hello World
+
+### POST /starkbank-callback
+
+#### Payload
+
+Os dois eventos suportados até o momento são `transfer` e `invoice`. Abaixo está um exemplo de payload de um evento de transferência:
+
+```json
+{
+    "event": {
+        "id": "5344245984526336",
+        "isDelivered": false,
+        "subscription": "transfer",
+        "created": "2020-03-11T00:14:23.201602+00:00",
+        "log": {
+            "id": "5344245984526336",
+            "errors": [],
+            "type": "success",
+            "created": "2020-03-11T00:14:22.104676+00:00",
+            "transfer": {
+                "id": "5907195937947648",
+                "status": "success",
+                "amount": 10000000,
+                "name": "Jon Snow",
+                "bankCode": "001",
+                "branchCode": "5897"
+                "accountNumber": "10000-0",
+                "taxId": "580.822.679-17",
+                "tags": ["jon", "snow", "knows-nothing"],
+                "created": "2020-03-11T00:14:21.548876+00:00",
+                "updated": "2020-03-11T00:14:22.104702+00:00",
+                "transactionIds": ["6671637889941504"],
+                "fee": 200,
+            }
+        }
+    }
+}
+```
+
+#### Headers
+
+```json
+{
+  "Content-Type": "application/json",
+  "Digital-Signature": "assinatura digital do body"
+}
+```
+
+Os webhooks da Starkbank são assinados digitalmente, você deve verificar a assinatura digital do payload para garantir que a requisição é realmente da Starkbank.
+Veja mais detalhes sobre os webhooks da Starkbank [aqui](https://starkbank.com/docs/api#security).
+
+#### Resposta
+
+- Status: 200
+
+```json
+{
+  "message": "RESPOSTA DA REQUISIÇÃO"
+}
+```
+
+## Testes
+
+Para rodar os testes, execute o seguinte comando:
+
+```bash
+npm run test
+```
+
+Os testes são essenciais para garantir que a aplicação está funcionando corretamente. Durante o desenvolvimento do projeto, alguns bugs na integração com a Starkbank foram encontrados e corrigidos graças aos testes.
+
+## Deploy
+
+Para fazer o deploy eu utilizei uma instância gratuita da AWS EC2. O deploy foi feito utilizando os procedimentos descritos na documentação do NestJS. Não foi utilizado nenhum serviço de CI/CD e/ou Docker, o deploy foi feito manualmente. O banco de dados utilizado foi o PostgreSQL, também hospedado na AWS RDS.
+
+## Considerações finais
+
+O desafio foi muito interessante e desafiador. A integração com a API da Starkbank foi facilitada pelo uso da SDK deles para NodeJS. A parte mais desafiadora foi a implementação da assinatura digital dos webhooks da Starkbank. A documentação não foi muito clara quanto a como a implementação é realizada e acabei tendo que recorrer a SDK deles, a parte de assinatura eu queria ter feito manualmente, mas não obtive sucesso e devido ao tempo acabei utilizando a SDK deles. A parte de deploy foi tranquila, o mais trabalhoso foi configurar os serviços da AWS, mas o deploy em si foi tranquilo. A parte de testes foi muito importante, pois encontrei alguns bugs na integração com a Starkbank que só foram encontrados graças aos testes.
+
+## Autor
+
+- [Gabriel Scarpelin](https://www.linkedin.com/in/gabriel-scarpelin-diniz-425258144/)
+
+## Referências
+
+- [NestJS](https://docs.nestjs.com/)
+- [Prisma](https://www.prisma.io/)
+- [Starkbank](https://starkbank.com/docs/api)
+- [AWS](https://docs.aws.amazon.com/)
+- Github Copilot - Utilizado para auxiliar na escrita do código
