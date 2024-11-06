@@ -149,6 +149,8 @@ Para fazer o deploy eu utilizei uma instância gratuita da AWS EC2. O deploy foi
 
 O desafio foi muito interessante e desafiador. A integração com a API da Starkbank foi facilitada pelo uso da SDK deles para NodeJS. A parte mais desafiadora foi a implementação da assinatura digital dos webhooks da Starkbank. A documentação não foi muito clara quanto a como a implementação é realizada e acabei tendo que recorrer a SDK deles, a parte de assinatura eu queria ter feito manualmente, mas não obtive sucesso e devido ao tempo acabei utilizando a SDK deles. A parte de deploy foi tranquila, o mais trabalhoso foi configurar os serviços da AWS, mas o deploy em si foi tranquilo. A parte de testes foi muito importante, pois encontrei alguns bugs na integração com a Starkbank que só foram encontrados graças aos testes.
 
+No entanto, eu tive um problema muito grande com transferências de mesmo valores, ou seja, se dois invoices tiverem o mesmo valor, provavelmente a segunda transferência irá falhar, pois a Starkbank não aceita transferências de mesmo valor em um curto período de tempo. Eu tentei contornar esse problema, mas não obtive sucesso. Eu acredito que a solução para esse problema seria criar um serviço que gerenciasse os invoices e agrupassem os invoices recebidos no dia em uma única transferência para a conta da Starkbank, mas devido ao tempo não consegui implementar essa solução.
+
 ## Autor
 
 - [Gabriel Scarpelin](https://www.linkedin.com/in/gabriel-scarpelin-diniz-425258144/)
