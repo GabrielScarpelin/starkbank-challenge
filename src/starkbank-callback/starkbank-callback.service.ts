@@ -22,7 +22,7 @@ export class StarkbankCallbackService {
         created: 'CREATED',
       };
 
-      this.prismaService.invoice.upsert({
+      const invoice = await this.prismaService.invoice.upsert({
         where: {
           id: invoiceDto.id,
         },
@@ -51,31 +51,51 @@ export class StarkbankCallbackService {
           name: invoiceDto.name,
         },
       });
+      console.log('Invoice callback received and processed but not paid');
+      console.log('Invoice: ', invoice);
       return {
         message: 'Invoice callback received and processed but not paid',
       };
     }
 
-    const invoice = await this.prismaService.invoice.update({
+    const availableInvoice = await this.prismaService.invoice.findUnique({
       where: {
         id: invoiceDto.id,
-        OR: [
-          {
-            status: 'CREATED',
-          },
-          {
-            status: 'OVERDUE',
-          },
-        ],
+        NOT: {
+          OR: [
+            {
+              status: 'PAID',
+            },
+            {
+              status: 'CANCELED',
+            },
+            {
+              status: 'VOIDED',
+            },
+            {
+              status: 'EXPIRED',
+            },
+          ],
+        },
+      },
+    });
+
+    if (!availableInvoice) {
+      console.log('Invoice callback received but already paid or canceled');
+      console.log('Invoice receveid: ', invoiceDto);
+      return {
+        message: 'Invoice callback received but already paid or canceled',
+      };
+    }
+
+    await this.prismaService.invoice.update({
+      where: {
+        id: invoiceDto.id,
       },
       data: {
         status: 'PAID',
       },
     });
-
-    if (!invoice) {
-      throw new Error('Invoice not found');
-    }
 
     const bankCode = '20018183';
     const branch = '0001';

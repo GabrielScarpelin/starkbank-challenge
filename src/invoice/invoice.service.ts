@@ -58,7 +58,7 @@ export class InvoiceService {
         taxId: invoice.taxId,
       })),
     });
-
+    console.log('Invoices created: ', invoicesCreated);
     console.log('Invoices sent successfully.');
   }
 
